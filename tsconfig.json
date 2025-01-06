@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "types": ["jest"],
+    "target": "ES6",                          // Target modern JavaScript
+    "module": "ESNext",
+    "moduleResolution": "node",                      // Use ESNext module system
+    "jsx": "react-jsx",                       // Support React JSX
+    "strict": true,                           // Enable strict type-checking
+    "baseUrl": "./",                          // Base directory
+    "paths": {                                // Allow imports from src
+      "*": ["node_modules/*", "src/*"]
+    },
+    "esModuleInterop": true,                  // Allow default imports from CommonJS
+    "skipLibCheck": true,                     // Skip library checking for faster builds
+    "forceConsistentCasingInFileNames": true  // Enforce case-sensitive imports
+  },
+  "include": ["src", "jest.config.ts"],                         // Include files in src directory
+  "exclude": ["node_modules", "dist"]         // Exclude node_modules and dist
+}
