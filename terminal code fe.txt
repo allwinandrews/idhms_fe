@@ -1,0 +1,2 @@
+cd C:\Users\user\Desktop\IDHMS\idhms_fe
+npm start
