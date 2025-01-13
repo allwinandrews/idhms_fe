@@ -3,6 +3,7 @@
     "types": ["jest"],
     "target": "ES6",                          // Target modern JavaScript
     "module": "ESNext",
+    "lib": ["dom", "es2016"], // Add "es2016" or later to support Array.prototype.includes
     "moduleResolution": "node",                      // Use ESNext module system
     "jsx": "react-jsx",                       // Support React JSX
     "strict": true,                           // Enable strict type-checking
