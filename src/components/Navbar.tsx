@@ -1,81 +1,193 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import {
+    AppBar,
+    Toolbar,
+    Typography,
+    Box,
+    IconButton,
+    MenuItem,
+    FormControl,
+    InputLabel,
+    Select,
+} from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useRoles } from '../contexts/RoleContext';
+import { RoleKeys } from '../assets/types';
+import CustomButton from '../components/common/CustomButton'; // Reusable button component
 
-const Navbar = () => {
-    const { roles, setRoles } = useRoles(); // Roles list and updater from context
-    const [currentRole, setCurrentRole] = useState<string | null>(null); // Selected role
+interface NavbarProps {
+    toggleSidebar: () => void; // Function to toggle the sidebar
+}
+
+const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
+    const { roles, setRoles, currentRole, setCurrentRole } = useRoles(); // Roles list and updater from context
     const navigate = useNavigate();
 
-    // Initialize roles and set the first role as default
-    useEffect(() => {
-        if (roles && roles.length > 0) {
-            setCurrentRole(roles[0]); // Set the first role as default
-        }
-    }, [roles]);
-
-    const handleRoleChange = (newRole: string) => {
+    const handleRoleChange = (newRole: RoleKeys) => {
         setCurrentRole(newRole); // Update selected role
         navigate(`/${newRole.toLowerCase()}-dashboard`); // Navigate to the new role's dashboard
     };
 
     const handleLogout = () => {
+        localStorage.removeItem('currentRole'); // Clear current role from localStorage
         localStorage.removeItem('roles'); // Clear roles from localStorage
         setRoles(null); // Update context
+        setCurrentRole(null);
         navigate('/login'); // Redirect to login page
     };
 
     return (
-        <nav className="flex items-center justify-between bg-gray-800 text-white p-4">
-            <div className="flex space-x-4">
-                <NavLink
-                    to="/"
-                    className={({ isActive }) =>
-                        isActive ? 'text-blue-400' : 'text-white hover:text-blue-300'
-                    }
+        <AppBar
+            position="static"
+            sx={{
+                backgroundColor: 'primary.main',
+                height: 100, // Increase height to add spacing
+                justifyContent: 'center', // Center the toolbar within the AppBar
+            }}
+        >
+            <Toolbar
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '16px 24px', // Add padding for more spacing
+                }}
+            >
+                {/* Sidebar Toggle & Home Link */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <IconButton
+                        onClick={toggleSidebar}
+                        edge="start"
+                        sx={{
+                            color: 'white',
+                        }}
+                    >
+                        <MenuIcon />
+                    </IconButton>
+                    <Typography
+                        variant="h6"
+                        component={NavLink}
+                        to="/"
+                        sx={{
+                            color: 'inherit',
+                            textDecoration: 'none',
+                            fontWeight: 'bold',
+                        }}
+                    >
+                        Home
+                    </Typography>
+                </Box>
+
+                {/* Role Selector & Logout */}
+                <Box
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 3,
+                    }}
                 >
-                    Home
-                </NavLink>
-            </div>
-
-            {roles && roles.length > 0 && (
-                <div className="flex items-center space-x-4">
-                    <label htmlFor="role-select" className="text-sm">
-                        Switch Role:
-                    </label>
-                    <select
-                        id="role-select"
-                        value={currentRole || ''}
-                        onChange={(e) => handleRoleChange(e.target.value)}
-                        className="bg-gray-700 text-white rounded px-2 py-1"
-                    >
-                        {roles.map((role) => (
-                            <option key={role} value={role}>
-                                {role}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-            )}
-
-            <div>
-                {currentRole ? (
-                    <button
+                    {roles && roles.length > 0 && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography
+                                variant="body1"
+                                sx={{
+                                    color: 'white',
+                                    fontWeight: 'bold',
+                                    fontSize: 16,
+                                }}
+                            >
+                                Current Role:
+                            </Typography>
+                            {roles.length === 1 ? (
+                                <Typography
+                                    variant="body2"
+                                    sx={{
+                                        backgroundColor: 'secondary.main',
+                                        color: 'white',
+                                        px: 2,
+                                        py: 1,
+                                        borderRadius: 1,
+                                    }}
+                                >
+                                    {currentRole}
+                                </Typography>
+                            ) : (
+                                <FormControl
+                                    sx={{
+                                        minWidth: 200,
+                                        backgroundColor: 'white',
+                                        borderRadius: 1,
+                                        boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+                                    }}
+                                >
+                                    <InputLabel
+                                        sx={{
+                                            fontSize: 14,
+                                            color: 'black',
+                                            '&.Mui-focused': {
+                                                color: 'primary.main',
+                                            },
+                                            '&.MuiFormLabel-filled': {
+                                                transform: 'translate(12px, -6px) scale(0.75)', // Adjust shrink position
+                                            },
+                                        }}
+                                        shrink={!!currentRole} // Ensures the label shrinks when a value exists
+                                    >
+                                        Select Role
+                                    </InputLabel>
+                                    <Select
+                                        value={currentRole || ''}
+                                        onChange={(e) =>
+                                            handleRoleChange(e.target.value as RoleKeys)
+                                        }
+                                        sx={{
+                                            '& .MuiOutlinedInput-notchedOutline': {
+                                                borderColor: 'primary.main',
+                                            },
+                                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                                                borderColor: 'secondary.main',
+                                            },
+                                            '& .MuiSelect-icon': {
+                                                color: 'primary.main',
+                                            },
+                                        }}
+                                    >
+                                        {roles.map((role) => (
+                                            <MenuItem
+                                                key={role}
+                                                value={role}
+                                                sx={{
+                                                    fontSize: 14,
+                                                    '&:hover': {
+                                                        backgroundColor: 'primary.main',
+                                                        color: 'white',
+                                                    },
+                                                }}
+                                            >
+                                                {role}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                            )}
+                        </Box>
+                    )}
+                    <CustomButton
+                        label="Logout"
                         onClick={handleLogout}
-                        className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded"
-                    >
-                        Logout
-                    </button>
-                ) : (
-                    <NavLink
-                        to="/login"
-                        className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded"
-                    >
-                        Login
-                    </NavLink>
-                )}
-            </div>
-        </nav>
+                        color="error"
+                        variant="contained"
+                        sx={{
+                            fontSize: 14,
+                            padding: '6px 16px',
+                            minWidth: '100px',
+                        }}
+                    />
+                </Box>
+
+            </Toolbar>
+        </AppBar>
     );
 };
 

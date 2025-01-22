@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     "types": ["jest"],
-    "target": "ES6",                          // Target modern JavaScript
+    "target": "ES2019",                          // Target modern JavaScript
     "module": "ESNext",
-    "lib": ["dom", "es2016"], // Add "es2016" or later to support Array.prototype.includes
+    "lib": ["ES2019", "DOM"], // Add ES2019 or later to your lib
     "moduleResolution": "node",                      // Use ESNext module system
     "jsx": "react-jsx",                       // Support React JSX
     "strict": true,                           // Enable strict type-checking
@@ -11,6 +11,7 @@
     "paths": {                                // Allow imports from src
       "*": ["node_modules/*", "src/*"]
     },
+    "resolveJsonModule": true,
     "esModuleInterop": true,                  // Allow default imports from CommonJS
     "skipLibCheck": true,                     // Skip library checking for faster builds
     "forceConsistentCasingInFileNames": true  // Enforce case-sensitive imports
