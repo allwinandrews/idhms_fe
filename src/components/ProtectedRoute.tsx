@@ -1,5 +1,5 @@
 import React, { JSX } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useRoles } from '../contexts/RoleContext';
 
 interface ProtectedRouteProps {
@@ -8,18 +8,31 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles, children }) => {
-    const { roles } = useRoles(); // Retrieve the roles from the context
+    const { roles, setCurrentRole, isUrlAccessible } = useRoles(); // Retrieve roles and utilities from context
+    const location = useLocation(); // Get the current route
     console.log('roles', roles)
 
-
-    // Check if the user has any role that matches the allowed roles
-    const isAuthorized = roles && roles.some((role) => allowedRoles.includes(role))
-    console.log('isAuthorized', isAuthorized)
-    if (!isAuthorized) {
-        return <Navigate to="/login" />; // Redirect to login if unauthorized
+    // Validate if the user has roles
+    if (!roles || roles.length === 0) {
+        return <Navigate to="/login" replace />; // Redirect to login if no roles are assigned
     }
 
-    return children; // Render the child component if authorized
+    // Check if the current route is accessible
+    if (!isUrlAccessible(location.pathname)) {
+        // Find the first valid role for the user
+        const validRole = roles.find((role) => allowedRoles.includes(role));
+
+        if (validRole) {
+            // Update currentRole and redirect to its dashboard
+            setCurrentRole(validRole);
+            return <Navigate to={`/${validRole.toLowerCase()}-dashboard`} replace />;
+        }
+
+        // Redirect to login if no valid role exists
+        return <Navigate to="/login" replace />;
+    }
+    // If authorized, render the child component
+    return children;
 };
 
 export default ProtectedRoute;

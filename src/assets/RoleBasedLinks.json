@@ -1,0 +1,58 @@
+{
+    "Admin": [
+        {
+            "label": "User Management",
+            "path": "/admin/users"
+        },
+        {
+            "label": "Appointment Management",
+            "path": "/admin/appointments"
+        },
+        {
+            "label": "Settings",
+            "path": "/admin/settings"
+        }
+    ],
+    "Dentist": [
+        {
+            "label": "My Appointments",
+            "path": "/dentist/appointments"
+        },
+        {
+            "label": "Patient Records",
+            "path": "/dentist/patients"
+        },
+        {
+            "label": "Settings",
+            "path": "/dentist/settings"
+        }
+    ],
+    "Receptionist": [
+        {
+            "label": "Manage Appointments",
+            "path": "/receptionist/appointments"
+        },
+        {
+            "label": "Patient Check-In",
+            "path": "/receptionist/checkin"
+        },
+        {
+            "label": "Settings",
+            "path": "/receptionist/settings"
+        }
+    ],
+    "Patient": [
+        {
+            "label": "View Appointments",
+            "path": "/patient/appointments"
+        },
+        {
+            "label": "Book Appointment",
+            "path": "/patient/book"
+        },
+        {
+            "label": "Settings",
+            "path": "/patient/settings"
+        }
+    ]
+}

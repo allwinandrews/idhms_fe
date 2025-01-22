@@ -5,14 +5,34 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { RoleProvider } from './contexts/RoleContext';
 
+
+import '@fontsource/roboto/300.css';
+import '@fontsource/roboto/400.css';
+import '@fontsource/roboto/500.css';
+import '@fontsource/roboto/700.css';
+
+
+import { CssBaseline, ThemeProvider } from '@mui/material';
+import { createTheme } from '@mui/material/styles';
+
+const theme = createTheme({
+  palette: {
+    primary: { main: '#1976d2' },
+    secondary: { main: '#dc004e' },
+  },
+});
+
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
   <React.StrictMode>
-    <RoleProvider>
-      <App />
-    </RoleProvider>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <RoleProvider>
+        <App />
+      </RoleProvider>
+    </ThemeProvider>
   </React.StrictMode>
 );
 

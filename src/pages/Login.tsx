@@ -1,33 +1,41 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AxiosError } from 'axios';
-
-import { useRoles } from '../contexts/RoleContext';
-
+import { useForm, FormProvider } from 'react-hook-form';
+import { Box, Button, Typography, IconButton, InputAdornment, CircularProgress } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { login } from '../services/authService';
+import { useRoles } from '../contexts/RoleContext';
+import TextField from '../components/common/TextField'; // Optimized TextField
 
-const Login = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
-    const { setRoles } = useRoles();
+const Login: React.FC = () => {
+    const { setRoles, setCurrentRole } = useRoles();
     const navigate = useNavigate();
 
-    const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const [showPassword, setShowPassword] = useState(false);
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const methods = useForm({
+        defaultValues: {
+            email: '',
+            password: '',
+        },
+    });
+
+    const { handleSubmit } = methods;
+
+    const handleLogin = async (data: { email: string; password: string }) => {
+        setLoading(true);
+        setError('');
 
         try {
-            const roles = await login(email, password); // Call login API
-            console.log('User roles:', roles);
-
-            // Save roles to localStorage
-            localStorage.setItem('roles', JSON.stringify(roles));
+            const roles = await login(data.email, data.password); // Call login API
             setRoles(roles);
 
-            // Redirect to the first role's dashboard
             if (roles.length > 0) {
-                const defaultRole = roles[0]; // First role in the array
+                const defaultRole = roles[0]; // Use the first role in the array
+                setCurrentRole(defaultRole);
                 navigate(`/${defaultRole.toLowerCase()}-dashboard`);
             } else {
                 setError('No roles assigned to this user.');
@@ -40,65 +48,103 @@ const Login = () => {
             } else {
                 setError('An unknown error occurred');
             }
+        } finally {
+            setLoading(false);
         }
     };
 
-
-
     return (
-        <div className="flex justify-center items-center h-screen">
-            <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-                <h1 className="text-2xl font-bold text-center mb-4">Login</h1>
-                <form onSubmit={handleLogin}>
-                    <div className="mb-4">
-                        <label className="block text-gray-700 mb-1">Email</label>
-                        <input
-                            type="email"
-                            className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="Enter your email"
-                            required
-                        />
-                    </div>
-                    <div className="mb-4 relative">
-                        <label className="block text-gray-700 mb-1">Password</label>
-                        <input
-                            type={showPassword ? 'text' : 'password'} // Toggle input type
-                            className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Enter your password"
-                            required
-                        />
-                        <span
-                            onClick={() => setShowPassword(!showPassword)} // Toggle visibility
-                            className="absolute top-2 right-3 text-gray-500 cursor-pointer"
+        <Box
+            sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '100vh',
+                backgroundColor: '#f5f5f5',
+            }}
+        >
+            <Box
+                sx={{
+                    backgroundColor: 'white',
+                    padding: 4,
+                    borderRadius: 2,
+                    boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.1)',
+                    maxWidth: 400,
+                    width: '100%',
+                }}
+            >
+                <Typography variant="h5" fontWeight="bold" textAlign="center" mb={3}>
+                    Login
+                </Typography>
+                <FormProvider {...methods}>
+                    <form onSubmit={handleSubmit(handleLogin)}>
+                        <Box mb={2}>
+                            <TextField
+                                name="email"
+                                label="Email"
+                                validation={{
+                                    required: 'Email is required',
+                                    pattern: {
+                                        value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                                        message: 'Enter a valid email',
+                                    },
+                                }}
+                                muiProps={{
+                                    placeholder: 'Enter your email',
+                                }}
+                            />
+                        </Box>
+                        <Box mb={2}>
+                            <TextField
+                                name="password"
+                                label="Password"
+                                validation={{ required: 'Password is required' }}
+                                muiProps={{
+                                    type: showPassword ? 'text' : 'password',
+                                    placeholder: 'Enter your password',
+                                    InputProps: {
+                                        endAdornment: (
+                                            <InputAdornment position="end">
+                                                <IconButton onClick={() => setShowPassword(!showPassword)}>
+                                                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                </IconButton>
+                                            </InputAdornment>
+                                        ),
+                                    },
+                                }}
+                            />
+                        </Box>
+                        {error && (
+                            <Typography color="error" mb={2} textAlign="center">
+                                {error}
+                            </Typography>
+                        )}
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            color="primary"
+                            fullWidth
+                            disabled={loading}
+                            startIcon={loading && <CircularProgress size={20} />}
+                            sx={{ marginBottom: 2 }}
                         >
-                            {showPassword ? '🙈' : '👁️'} {/* Eye icon */}
-                        </span>
-                    </div>
-                    {error && <p className="text-red-500 mb-4">{error}</p>}
-                    <button
-                        type="submit"
-                        className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-                    >
-                        Login
-                    </button>
-                </form>
-                <div className="mt-4 text-center">
-                    <a href="#" className="text-blue-500 hover:underline">
+                            {loading ? 'Logging in...' : 'Login'}
+                        </Button>
+                    </form>
+                </FormProvider>
+                <Typography textAlign="center" mt={2}>
+                    <a href="#" style={{ color: '#1976d2', textDecoration: 'none' }}>
                         Forgot Password?
                     </a>
-                    <p className="text-gray-600 mt-2">
-                        Don’t have an account?{' '}
-                        <a href="#" className="text-blue-500 hover:underline">
-                            Sign Up
-                        </a>
-                    </p>
-                </div>
-            </div>
-        </div>
+                </Typography>
+                <Typography textAlign="center" mt={1}>
+                    Don’t have an account?{' '}
+                    <a href="#" style={{ color: '#1976d2', textDecoration: 'none' }}>
+                        Sign Up
+                    </a>
+                </Typography>
+            </Box>
+        </Box>
     );
 };
 
