@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import roleUrls from '../assets/roleUrls.json'; // Assuming this is where the JSON is located
+import { roleUrls } from '../assets/roleUrls'; // Assuming this is where the JSON is located
 import { RoleKeys } from '../assets/types';
 
 interface RoleContextType {

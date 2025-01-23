@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "types": ["jest"],
+    "types": ["jest", "node"],
     "target": "ES2019",                          // Target modern JavaScript
     "module": "ESNext",
     "lib": ["ES2019", "DOM"], // Add ES2019 or later to your lib

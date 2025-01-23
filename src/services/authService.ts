@@ -1,27 +1,37 @@
-import apiClient from './api';
+import { apiPost } from './api'; // Use utility functions from api.ts
+import backendUrls from '../assets/backendUrls';
+
+// Define the types for API responses
+interface LoginResponse {
+    roles: string[]; // Adjust according to the API response structure
+}
+
+interface RefreshTokenResponse {
+    access: string; // Access token structure
+}
+
+interface RegisterResponse {
+    message: string; // Example response structure for registration
+    user?: object; // Include any additional fields your API returns
+}
 
 // Login function
-export const login = async (email: string, password: string) => {
-    const response = await apiClient.post('/login/', { email, password }, { withCredentials: true });
+export const login = async (email: string, password: string): Promise<string[]> => {
+    const response = await apiPost<LoginResponse>(backendUrls.auth.login, { email, password });
 
-    // Save roles to localStorage or global state
-    const roles = response.data.roles; // List of roles from the API response
-
-    return roles; // Return roles for further use
+    return response.roles; // Return roles for further processing
 };
 
-// Refresh Token function
-export const refreshAccessToken = async () => {
-    // No need to manually handle refresh token; it's sent as an HttpOnly cookie
-    const response = await apiClient.post('/login/refresh/', {}, { withCredentials: true });
+// Explicit Refresh Token function (optional)
+export const refreshAccessToken = async (): Promise<string> => {
+    const response = await apiPost<RefreshTokenResponse>('/login/refresh/');
 
-    // The new access token will be available for the backend to use in secure API calls
-    return response.data.access; // If you need to return it for debugging/logging
+    return response.access; // Optionally return access token for debugging/logging
 };
 
 // Register function
-export const register = async (userData: { email: string; password: string; role: string }) => {
-    const response = await apiClient.post('/register/', userData, { withCredentials: true });
+export const register = async (userData: { email: string; password: string; role: string }): Promise<RegisterResponse> => {
+    const response = await apiPost<RegisterResponse>('/register/', userData);
 
-    return response.data;
+    return response; // Return full response for further use
 };
