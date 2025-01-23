@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate, useNavigate } from 'react-router-dom';
-import roleUrls from './assets/roleUrls.json'; // Import role-to-URL mapping
+import { roleUrls } from './assets/roleUrls'; // Import role-to-URL mapping
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
 import DentistDashboard from './pages/DentistDashboard';

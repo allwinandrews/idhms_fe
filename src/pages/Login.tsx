@@ -7,6 +7,7 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { login } from '../services/authService';
 import { useRoles } from '../contexts/RoleContext';
 import TextField from '../components/common/TextField'; // Optimized TextField
+import { RoleKeys } from '../assets/types';
 
 const Login: React.FC = () => {
     const { setRoles, setCurrentRole } = useRoles();
@@ -30,15 +31,18 @@ const Login: React.FC = () => {
         setError('');
 
         try {
-            const roles = await login(data.email, data.password); // Call login API
+            // Call login API
+            const roles = (await login(data.email, data.password)) as RoleKeys[]; // Explicitly cast to RoleKeys[]
+
+            // Update roles in context or state
             setRoles(roles);
 
             if (roles.length > 0) {
                 const defaultRole = roles[0]; // Use the first role in the array
-                setCurrentRole(defaultRole);
-                navigate(`/${defaultRole.toLowerCase()}-dashboard`);
+                setCurrentRole(defaultRole); // Update current role in context
+                navigate(`/${defaultRole.toLowerCase()}-dashboard`); // Redirect based on the role
             } else {
-                setError('No roles assigned to this user.');
+                setError('No roles assigned to this user.'); // Handle case of no roles
             }
         } catch (err: unknown) {
             if (err instanceof AxiosError) {
@@ -52,6 +56,8 @@ const Login: React.FC = () => {
             setLoading(false);
         }
     };
+
+
 
     return (
         <Box
