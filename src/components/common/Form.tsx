@@ -1,6 +1,9 @@
 import React from 'react';
-import { useForm, FormProvider, Resolver, FieldValues, DefaultValues, RegisterOptions } from 'react-hook-form';
-import { ButtonProps, SelectProps, TextFieldProps } from '@mui/material';
+import { useForm, FormProvider, FieldValues, DefaultValues, RegisterOptions, Resolver } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { ObjectSchema } from 'yup';
+import { ButtonProps, SelectProps, TextFieldProps, useTheme, Box, CircularProgress } from '@mui/material';
+
 import CustomButton from './CustomButton';
 import Dropdown from './Dropdown';
 import TextField from './TextField';
@@ -8,24 +11,21 @@ import TextField from './TextField';
 export type FieldType = 'text' | 'dropdown' | 'button' | 'checkbox' | 'radio' | 'date';
 
 export interface FieldConfig {
-    type: FieldType; // Extendable type for various input fields
-    name: string; // Field name
-    label?: string; // Optional label for the field
-    options?: { value: string | number; label: string }[]; // Dropdown or radio button options
-    validation?: RegisterOptions; // Validation rules for forms
-    muiProps?: Partial<
-        FieldConfigProps // Conditional props based on type
-    >;
+    type: FieldType;
+    name: string;
+    label?: string;
+    options?: { value: string | number; label: string }[];
+    validation?: RegisterOptions; // Validation rules for react-hook-form
+    muiProps?: Partial<TextFieldProps | SelectProps | ButtonProps>; // Material-UI props
     action?: () => void; // Button-specific actions
 }
 
-type FieldConfigProps = TextFieldProps | SelectProps | ButtonProps;
-
 interface FormProps<T extends FieldValues> {
-    defaultValues: DefaultValues<T>; // Default values for the form
-    validationSchema: Resolver<T>; // Validation resolver
+    defaultValues: DefaultValues<T>;
+    validationSchema: ObjectSchema<Partial<T>>; // Correctly aligned with Yup
     onSubmit: (data: T) => void; // Form submission handler
-    fields: FieldConfig[]; // Field configurations
+    fields: FieldConfig[]; // Form field configurations
+    loading?: boolean | null | undefined; // Optional loading state, ensure it’s boolean, null or undefined
 }
 
 const Form = <T extends FieldValues>({
@@ -33,61 +33,70 @@ const Form = <T extends FieldValues>({
     validationSchema,
     onSubmit,
     fields,
+    loading = false,
 }: React.PropsWithChildren<FormProps<T>>) => {
-    const methods = useForm<T>({
-        defaultValues,
-        resolver: validationSchema,
+    const theme = useTheme();
+    // Properly align useForm with Partial<T> and yupResolver
+    const methods = useForm<Partial<T>>({
+        defaultValues: defaultValues as DefaultValues<Partial<T>>, // Cast defaultValues to Partial<T> for compatibility
+        resolver: yupResolver(validationSchema) as unknown as Resolver<Partial<T>>, // Explicit cast through unknown to avoid type conflict
     });
 
     return (
         <FormProvider {...methods}>
-            <form onSubmit={methods.handleSubmit(onSubmit)}>
-                {fields.map((field) => {
-                    switch (field.type) {
-                        case 'text':
-                            return (
-                                <TextField
-                                    key={field.name}
-                                    name={field.name}
-                                    label={field.label || ''}
-                                    validation={field.validation}
-                                    muiProps={field.muiProps as TextFieldProps}
-                                />
-                            );
-                        case 'dropdown':
-                            return (
-                                <Dropdown
-                                    key={field.name}
-                                    name={field.name}
-                                    label={field.label || ''}
-                                    options={field.options || []}
-                                    validation={field.validation}
-                                    muiProps={field.muiProps as SelectProps}
-                                />
-                            );
-                        case 'button':
-                            return (
-                                <CustomButton
-                                    key={field.name}
-                                    label={field.label || ''}
-                                    onClick={field.action || (() => { })}
-                                    variant={
-                                        (field.muiProps?.variant as 'text' | 'outlined' | 'contained') || 'contained'
-                                    } // Ensure the type matches the expected variant
-                                    color={
-                                        (field.muiProps?.color as 'primary' | 'secondary' | 'error' | 'success') || 'primary'
-                                    } // Restrict color to allowed values
-                                    type={
-                                        (field.muiProps?.type as 'button' | 'submit' | 'reset') || 'button'
-                                    } // Ensure the type matches the allowed HTML button types
-                                />
-
-                            );
-                        default:
-                            return null;
-                    }
-                })}
-                <CustomButton label="Submit" type="submit" />
+            <form onSubmit={methods.handleSubmit((data) => onSubmit(data as T))} style={{ width: '100%' }}>
+                <fieldset disabled={!!loading} style={{ border: 'none', padding: 0 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(2) }}>
+                        {fields.map((field) => {
+                            switch (field.type) {
+                                case 'text':
+                                    return (
+                                        <TextField
+                                            key={field.name}
+                                            name={field.name}
+                                            label={field.label || ''}
+                                            validation={field.validation}
+                                            muiProps={field.muiProps as TextFieldProps}
+                                        />
+                                    );
+                                case 'dropdown':
+                                    return (
+                                        <Dropdown
+                                            key={field.name}
+                                            name={field.name}
+                                            label={field.label || ''}
+                                            options={field.options || []}
+                                            validation={field.validation}
+                                            muiProps={field.muiProps as SelectProps}
+                                        />
+                                    );
+                                case 'button':
+                                    return (
+                                        <CustomButton
+                                            key={field.name}
+                                            label={field.label || ''}
+                                            onClick={field.action}
+                                            loading={loading ?? false} // Explicitly ensure boolean
+                                            {...(field.muiProps as ButtonProps)}
+                                        />
+                                    );
+                                default:
+                                    return null;
+                            }
+                        })}
+                        {loading ? (
+                            <CircularProgress
+                                size={24}
+                                sx={{
+                                    display: 'block',
+                                    margin: '16px auto',
+                                }}
+                            />
+                        ) : (
+                            <CustomButton label="Submit" type="submit" loading={loading} />
+                        )}
+                    </Box>
+                </fieldset>
             </form>
         </FormProvider>
     );

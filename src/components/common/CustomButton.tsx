@@ -1,9 +1,9 @@
 import React from 'react';
-import { Button, CircularProgress, ButtonProps } from '@mui/material';
+import { Button, CircularProgress, ButtonProps, useTheme } from '@mui/material';
 
 interface CustomButtonProps extends ButtonProps {
     label: string;
-    loading?: boolean; // Custom loading state
+    loading?: boolean | null | undefined; // Optional loading state, ensure it’s boolean, null or undefined
 }
 
 const CustomButton: React.FC<CustomButtonProps> = ({
@@ -12,27 +12,34 @@ const CustomButton: React.FC<CustomButtonProps> = ({
     variant = 'contained',
     color = 'primary',
     disabled = false,
-    loading = false,
+    loading = false, // Default loading to false if not provided
     type = 'button',
     sx,
     ...rest
 }) => {
+    const isLoading = !!loading; // Forcefully convert to boolean
+
+    const theme = useTheme(); // Access the theme for spacing, colors, etc.
+
     return (
         <Button
             variant={variant}
             color={color}
             onClick={onClick}
-            disabled={disabled || loading}
+            disabled={disabled || isLoading}
             type={type as 'button' | 'submit' | 'reset'} // Restrict type
             sx={{
-                minWidth: 120,
-                margin: '8px 0',
+                minWidth: theme.spacing(15), // Use theme spacing for width
+                margin: theme.spacing(1, 0), // Use theme spacing for margin
+                fontSize: theme.typography.body1.fontSize, // Use typography from design tokens
+                fontWeight: theme.typography.body1.fontWeight, // Use typography weight
+                textTransform: 'none', // Disable uppercase transformation
                 ...sx, // Allow custom styles via sx prop
             }}
-            aria-busy={loading} // Accessibility for loading state
+            aria-busy={isLoading} // Accessibility for loading state
             {...rest} // Spread other props like className, id, etc.
         >
-            {loading ? <CircularProgress size={24} color="inherit" /> : label}
+            {isLoading ? <CircularProgress size={24} color="inherit" /> : label}
         </Button>
     );
 };

@@ -1,63 +1,89 @@
-import React, { useState } from 'react';
+import React, { useReducer } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AxiosError } from 'axios';
-import { useForm, FormProvider } from 'react-hook-form';
-import { Box, Button, Typography, IconButton, InputAdornment, CircularProgress } from '@mui/material';
+import { Box, Typography, InputAdornment, IconButton } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { login } from '../services/authService';
 import { useRoles } from '../contexts/RoleContext';
-import TextField from '../components/common/TextField'; // Optimized TextField
+import Form from '../components/common/Form';
+import { loginSchema } from '../schemas/user/loginSchema';
 import { RoleKeys } from '../assets/types';
+
+interface LoginFormValues {
+    email: string;
+    password: string;
+}
+
+// Define action types
+type LoginAction =
+    | { type: 'SET_FIELD'; field: string; value: string }
+    | { type: 'SET_LOADING'; value: boolean }
+    | { type: 'SET_ERROR'; value: string }
+    | { type: 'TOGGLE_PASSWORD' };
+
+interface LoginState {
+    email: string;
+    password: string;
+    loading: boolean;
+    error: string;
+    showPassword: boolean;
+}
+
+const initialState: LoginState = {
+    email: '',
+    password: '',
+    loading: false,
+    error: '',
+    showPassword: false,
+};
+
+const loginReducer = (state: LoginState, action: LoginAction): LoginState => {
+    switch (action.type) {
+        case 'SET_FIELD':
+            return { ...state, [action.field]: action.value };
+        case 'SET_LOADING':
+            return { ...state, loading: action.value };
+        case 'SET_ERROR':
+            return { ...state, error: action.value };
+        case 'TOGGLE_PASSWORD':
+            return { ...state, showPassword: !state.showPassword };
+        default:
+            return state;
+    }
+};
 
 const Login: React.FC = () => {
     const { setRoles, setCurrentRole } = useRoles();
     const navigate = useNavigate();
+    const [state, dispatch] = useReducer(loginReducer, initialState);
 
-    const [showPassword, setShowPassword] = useState(false);
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
-
-    const methods = useForm({
-        defaultValues: {
-            email: '',
-            password: '',
-        },
-    });
-
-    const { handleSubmit } = methods;
-
-    const handleLogin = async (data: { email: string; password: string }) => {
-        setLoading(true);
-        setError('');
+    const handleLogin = async (data: LoginFormValues) => {
+        dispatch({ type: 'SET_LOADING', value: true });
+        dispatch({ type: 'SET_ERROR', value: '' });
 
         try {
-            // Call login API
-            const roles = (await login(data.email, data.password)) as RoleKeys[]; // Explicitly cast to RoleKeys[]
-
-            // Update roles in context or state
+            const roles = (await login(data.email, data.password)) as RoleKeys[];
             setRoles(roles);
 
             if (roles.length > 0) {
-                const defaultRole = roles[0]; // Use the first role in the array
-                setCurrentRole(defaultRole); // Update current role in context
-                navigate(`/${defaultRole.toLowerCase()}-dashboard`); // Redirect based on the role
+                const defaultRole = roles[0];
+                setCurrentRole(defaultRole);
+                navigate(`/${defaultRole.toLowerCase()}-dashboard`);
             } else {
-                setError('No roles assigned to this user.'); // Handle case of no roles
+                dispatch({ type: 'SET_ERROR', value: 'No roles assigned to this user.' });
             }
         } catch (err: unknown) {
             if (err instanceof AxiosError) {
-                setError(err.response?.data?.detail || 'Invalid email or password');
+                dispatch({ type: 'SET_ERROR', value: err.response?.data?.detail || 'Invalid email or password' });
             } else if (err instanceof Error) {
-                setError(err.message || 'An unexpected error occurred');
+                dispatch({ type: 'SET_ERROR', value: err.message || 'An unexpected error occurred' });
             } else {
-                setError('An unknown error occurred');
+                dispatch({ type: 'SET_ERROR', value: 'An unknown error occurred' });
             }
         } finally {
-            setLoading(false);
+            dispatch({ type: 'SET_LOADING', value: false });
         }
     };
-
-
 
     return (
         <Box
@@ -66,15 +92,15 @@ const Login: React.FC = () => {
                 justifyContent: 'center',
                 alignItems: 'center',
                 height: '100vh',
-                backgroundColor: '#f5f5f5',
+                backgroundColor: 'background.default',
             }}
         >
             <Box
                 sx={{
-                    backgroundColor: 'white',
+                    backgroundColor: 'background.paper',
                     padding: 4,
                     borderRadius: 2,
-                    boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.1)',
+                    boxShadow: 2,
                     maxWidth: 400,
                     width: '100%',
                 }}
@@ -82,62 +108,45 @@ const Login: React.FC = () => {
                 <Typography variant="h5" fontWeight="bold" textAlign="center" mb={3}>
                     Login
                 </Typography>
-                <FormProvider {...methods}>
-                    <form onSubmit={handleSubmit(handleLogin)}>
-                        <Box mb={2}>
-                            <TextField
-                                name="email"
-                                label="Email"
-                                validation={{
-                                    required: 'Email is required',
-                                    pattern: {
-                                        value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                                        message: 'Enter a valid email',
-                                    },
-                                }}
-                                muiProps={{
-                                    placeholder: 'Enter your email',
-                                }}
-                            />
-                        </Box>
-                        <Box mb={2}>
-                            <TextField
-                                name="password"
-                                label="Password"
-                                validation={{ required: 'Password is required' }}
-                                muiProps={{
-                                    type: showPassword ? 'text' : 'password',
-                                    placeholder: 'Enter your password',
-                                    InputProps: {
-                                        endAdornment: (
-                                            <InputAdornment position="end">
-                                                <IconButton onClick={() => setShowPassword(!showPassword)}>
-                                                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                                                </IconButton>
-                                            </InputAdornment>
-                                        ),
-                                    },
-                                }}
-                            />
-                        </Box>
-                        {error && (
-                            <Typography color="error" mb={2} textAlign="center">
-                                {error}
-                            </Typography>
-                        )}
-                        <Button
-                            type="submit"
-                            variant="contained"
-                            color="primary"
-                            fullWidth
-                            disabled={loading}
-                            startIcon={loading && <CircularProgress size={20} />}
-                            sx={{ marginBottom: 2 }}
-                        >
-                            {loading ? 'Logging in...' : 'Login'}
-                        </Button>
-                    </form>
-                </FormProvider>
+                <Form<LoginFormValues>
+                    defaultValues={{ email: '', password: '' }}
+                    validationSchema={loginSchema}
+                    onSubmit={handleLogin}
+                    loading={state.loading}
+                    fields={[
+                        {
+                            type: 'text',
+                            name: 'email',
+                            label: 'Email',
+                            muiProps: {
+                                placeholder: 'Enter your email',
+                            },
+                        },
+                        {
+                            type: 'text',
+                            name: 'password',
+                            label: 'Password',
+                            muiProps: {
+                                type: state.showPassword ? 'text' : 'password',
+                                placeholder: 'Enter your password',
+                                InputProps: {
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton onClick={() => dispatch({ type: 'TOGGLE_PASSWORD' })}>
+                                                {state.showPassword ? <VisibilityOff /> : <Visibility />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                },
+                            },
+                        },
+                    ]}
+                />
+                {state.error && (
+                    <Typography color="error" mb={2} textAlign="center">
+                        {state.error}
+                    </Typography>
+                )}
                 <Typography textAlign="center" mt={2}>
                     <a href="#" style={{ color: '#1976d2', textDecoration: 'none' }}>
                         Forgot Password?

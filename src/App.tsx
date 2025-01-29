@@ -13,6 +13,9 @@ import Sidebar from './components/common/Sidebar';
 import { useRoles } from './contexts/RoleContext';
 import { RoleKeys } from './assets/types';
 
+import { Provider } from 'react-redux'; // Import the Provider
+import store from './store/store'; // Import the Redux store
+
 const AppContent = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -129,9 +132,12 @@ const AppContent = () => {
 };
 
 const App = () => (
-  <Router>
-    <AppContent />
-  </Router>
+  <Provider store={store}>
+    <Router>
+      <AppContent />
+    </Router>
+  </Provider>
+
 );
 
 export default App;

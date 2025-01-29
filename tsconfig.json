@@ -6,7 +6,9 @@
     "lib": ["ES2019", "DOM"], // Add ES2019 or later to your lib
     "moduleResolution": "node",                      // Use ESNext module system
     "jsx": "react-jsx",                       // Support React JSX
-    "strict": true,                           // Enable strict type-checking
+    "strict": true, // Enable strict type-checking
+    "strictNullChecks": true,
+    "noImplicitAny": true,
     "baseUrl": "./",                          // Base directory
     "paths": {                                // Allow imports from src
       "*": ["node_modules/*", "src/*"]
