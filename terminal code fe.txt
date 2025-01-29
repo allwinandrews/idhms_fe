@@ -1,2 +1,5 @@
 cd C:\Users\user\Desktop\IDHMS\idhms_fe
 cd C:\Users\user\Desktop\IDHMS\idhms_fe && npm start
+
+Run a TypeScript Check
+npx tsc --noEmit

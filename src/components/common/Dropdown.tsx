@@ -6,6 +6,7 @@ import {
     Select,
     SelectProps,
     FormHelperText,
+    useTheme,
 } from '@mui/material';
 import { Controller, useFormContext, RegisterOptions } from 'react-hook-form';
 
@@ -30,6 +31,7 @@ const Dropdown: React.FC<DropdownProps> = ({
     value,
     onChange,
 }) => {
+    const theme = useTheme(); // Access design tokens
     const formContext = useFormContext();
     const control = formContext?.control;
 
@@ -38,16 +40,35 @@ const Dropdown: React.FC<DropdownProps> = ({
         return (
             <FormControl
                 fullWidth
-                sx={{ marginBottom: 2 }}
+                sx={{
+                    marginBottom: theme.spacing(2),
+                }}
             >
                 <InputLabel>{label}</InputLabel>
                 <Select
                     value={value || ''}
                     onChange={(e) => onChange?.(e.target.value as string | number)}
                     {...muiProps}
+                    sx={{
+                        '& .MuiOutlinedInput-notchedOutline': {
+                            borderColor: theme.palette.primary.main,
+                        },
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                            borderColor: theme.palette.secondary.main,
+                        },
+                    }}
                 >
                     {options.map((option) => (
-                        <MenuItem key={option.value} value={option.value}>
+                        <MenuItem
+                            key={option.value}
+                            value={option.value}
+                            sx={{
+                                '&:hover': {
+                                    backgroundColor: theme.palette.primary.light,
+                                    color: theme.palette.common.white,
+                                },
+                            }}
+                        >
                             {option.label}
                         </MenuItem>
                     ))}
@@ -66,15 +87,34 @@ const Dropdown: React.FC<DropdownProps> = ({
                 <FormControl
                     fullWidth
                     error={!!fieldState.error}
-                    sx={{ marginBottom: 2 }}
+                    sx={{
+                        marginBottom: theme.spacing(2),
+                    }}
                 >
                     <InputLabel>{label}</InputLabel>
                     <Select
                         {...field}
                         {...muiProps}
+                        sx={{
+                            '& .MuiOutlinedInput-notchedOutline': {
+                                borderColor: theme.palette.primary.main,
+                            },
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                                borderColor: theme.palette.secondary.main,
+                            },
+                        }}
                     >
                         {options.map((option) => (
-                            <MenuItem key={option.value} value={option.value}>
+                            <MenuItem
+                                key={option.value}
+                                value={option.value}
+                                sx={{
+                                    '&:hover': {
+                                        backgroundColor: theme.palette.primary.light,
+                                        color: theme.palette.common.white,
+                                    },
+                                }}
+                            >
                                 {option.label}
                             </MenuItem>
                         ))}

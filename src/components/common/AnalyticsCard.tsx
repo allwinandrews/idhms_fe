@@ -1,30 +1,45 @@
 import React from 'react';
-import { Card, CardContent, Typography } from '@mui/material';
+import { Card, CardContent, Typography, useTheme } from '@mui/material';
 
 interface AnalyticsCardProps {
     title: string;
     value: number | string;
-    bgColor?: string;
+    bgColor?: string; // Optional background color
 }
 
 const AnalyticsCard: React.FC<AnalyticsCardProps> = ({
     title,
     value,
-    bgColor = '#e3f2fd',
+    bgColor,
 }) => {
+    const theme = useTheme(); // Access design tokens from the theme
+
     return (
         <Card
-            style={{
-                backgroundColor: bgColor,
-                borderRadius: '8px',
-                boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+            sx={{
+                backgroundColor: bgColor || theme.palette.background.paper, // Use tokenized background color
+                borderRadius: theme.spacing(1), // Use spacing for rounded corners
+                boxShadow: theme.shadows[2], // Use tokenized shadow level
+                padding: theme.spacing(2), // Add consistent padding
             }}
         >
             <CardContent>
-                <Typography variant="h6" gutterBottom>
+                <Typography
+                    variant="h6"
+                    gutterBottom
+                    sx={{
+                        color: theme.palette.text.primary, // Use tokenized text color
+                    }}
+                >
                     {title}
                 </Typography>
-                <Typography variant="h4" fontWeight="bold">
+                <Typography
+                    variant="h4"
+                    fontWeight="bold"
+                    sx={{
+                        color: theme.palette.text.secondary, // Use tokenized secondary text color
+                    }}
+                >
                     {value}
                 </Typography>
             </CardContent>
