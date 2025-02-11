@@ -1,31 +1,32 @@
 const backendUrls = {
-    auth: {
-        login: "/login/",
-        refreshToken: "/login/refresh/",
-        register: "/register/",
-        bulkRegister: "/register/bulk/",
-    },
-    secure: {
-        secureView: "/secure/",
-    },
-    admin: {
-        adminOnly: "/admin/",
-    },
-    patient: {
-        data: "/patient/data/",
-    },
-    receptionist: {
-        managePatients: "/receptionist/manage-patients/",
-    },
-    appointments: {
-        listCreate: "/appointments/",
-        detail: (id: number) => `/appointments/${id}/`, // Accepts an ID for dynamic URLs
-    },
-    users: {
-        list: "/users/",
-        detail: (id: number) => `/users/${id}/`, // Accepts an ID for dynamic URLs
-        roles: (id: number) => `/users/${id}/roles/`, // Accepts an ID for dynamic URLs
-    },
+  auth: {
+    login: '/login/',
+    refreshToken: '/login/refresh/',
+    register: '/register/',
+    bulkRegister: '/register/bulk/',
+  },
+  secure: {
+    secureView: '/secure/',
+  },
+  admin: {
+    adminOnly: '/admin/',
+    analytics: '/admin/analytics/',
+  },
+  patient: {
+    data: '/patient/data/',
+  },
+  receptionist: {
+    managePatients: '/receptionist/manage-patients/',
+  },
+  appointments: {
+    list: '/appointments/', // Fetch all or create a new appointment
+    getById: (id: number) => `/appointments/${id}/`, // Fetch, update, or delete an appointment
+  },
+  users: {
+    list: '/users/', // Fetch all users
+    getById: (id: number) => `/users/${id}/`, // Fetch, update, or delete a user
+    roles: (id: number) => `/users/${id}/roles/`, // Manage roles
+  },
 };
 
 export default backendUrls;

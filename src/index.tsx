@@ -3,15 +3,12 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import { RoleProvider } from './contexts/RoleContext';
 import theme from './theme';
-
 
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
-
 
 import { CssBaseline, ThemeProvider } from '@mui/material';
 
@@ -22,9 +19,7 @@ root.render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <RoleProvider>
-        <App />
-      </RoleProvider>
+      <App />
     </ThemeProvider>
   </React.StrictMode>
 );
