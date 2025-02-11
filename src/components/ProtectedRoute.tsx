@@ -1,38 +1,55 @@
-import React, { JSX } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import { useRoles } from '../contexts/RoleContext';
+import React, { JSX, useEffect } from 'react';
+import { Navigate } from 'react-router-dom';
+import { useAppSelector, useAppDispatch } from '../store/store';
+import { selectIsAuthenticated, logout } from '../store/slices/authSlice';
+import {
+  selectRoles,
+  selectCurrentRole,
+  setCurrentRole,
+} from '../store/slices/roleSlice';
+import { RoleKeys } from '../assets/types';
 
 interface ProtectedRouteProps {
-    allowedRoles: string[]; // Roles allowed to access this route
-    children: JSX.Element; // The component to render if authorized
+  allowedRoles: RoleKeys[];
+  children: JSX.Element;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles, children }) => {
-    const { roles, setCurrentRole, isUrlAccessible } = useRoles(); // Retrieve roles and utilities from context
-    const location = useLocation(); // Get the current route
-    console.log('roles', roles)
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+  allowedRoles,
+  children,
+}) => {
+  const dispatch = useAppDispatch();
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const roles = useAppSelector(selectRoles);
+  const currentRole = useAppSelector(selectCurrentRole);
 
-    // Validate if the user has roles
-    if (!roles || roles.length === 0) {
-        return <Navigate to="/login" replace />; // Redirect to login if no roles are assigned
+  useEffect(() => {
+    if (roles.length > 0 && currentRole && !roles.includes(currentRole)) {
+      const defaultRole =
+        roles.find((role) => allowedRoles.includes(role)) || roles[0];
+      dispatch(setCurrentRole(defaultRole as RoleKeys));
     }
+  }, [roles, currentRole, allowedRoles, dispatch]);
 
-    // Check if the current route is accessible
-    if (!isUrlAccessible(location.pathname)) {
-        // Find the first valid role for the user
-        const validRole = roles.find((role) => allowedRoles.includes(role));
+  if (!isAuthenticated) {
+    return <Navigate to="/login7" replace />;
+  }
 
-        if (validRole) {
-            // Update currentRole and redirect to its dashboard
-            setCurrentRole(validRole);
-            return <Navigate to={`/${validRole.toLowerCase()}-dashboard`} replace />;
-        }
+  if (roles.length === 0) {
+    dispatch(logout());
+    return <Navigate to="/login8" replace />;
+  }
 
-        // Redirect to login if no valid role exists
-        return <Navigate to="/login" replace />;
+  if (!roles.some((role) => allowedRoles.includes(role))) {
+    const validRole = roles.find((role) => allowedRoles.includes(role));
+    if (validRole) {
+      dispatch(setCurrentRole(validRole as RoleKeys));
+      return <Navigate to={`/${validRole.toLowerCase()}-dashboard`} replace />;
     }
-    // If authorized, render the child component
-    return children;
+    return <Navigate to="/unauthorized" replace />;
+  }
+
+  return children;
 };
 
 export default ProtectedRoute;
